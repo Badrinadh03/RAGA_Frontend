@@ -215,7 +215,8 @@ function extractSection(content: string, key: string): string {
 
 function extractOptimizedResume(content: string): string {
   const match = content.match(/(?:📝 Full Optimized Resume|---\n)([\s\S]+?)(?:\n---|\n🗓️|$)/i);
-  if (match?.[1]?.trim().length > 200) return match[1].trim();
+  const extracted = match?.[1]?.trim();
+  if (extracted && extracted.length > 200) return extracted;
   if (looksLikeResumeText(content)) return content;
   return '';
 }
