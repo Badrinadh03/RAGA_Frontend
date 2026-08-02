@@ -31,7 +31,7 @@ export interface DesignSettings {
   fontCategory: 'serif' | 'sans' | 'mono';
   fontFamily: string;
   // Section Headings
-  sectionHeadingStyle: 'plain' | 'underline' | 'box' | 'filled' | 'line-left' | 'overline' | 'wavy';
+  sectionHeadingStyle: 'plain' | 'underline' | 'double-underline' | 'box' | 'filled' | 'line-left' | 'overline' | 'wavy';
   sectionHeadingCaps: 'capitalize' | 'uppercase';
   sectionHeadingSize: 's' | 'm' | 'l' | 'xl';
   sectionHeadingIcons: 'none' | 'outline' | 'filled';

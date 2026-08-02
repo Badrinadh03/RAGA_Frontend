@@ -23,7 +23,7 @@ import {
 interface CreateVersionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (version: Omit<Version, 'id' | 'status' | 'createdAt' | 'sections'>) => void;
+  onCreate: (version: Omit<Version, 'id' | 'createdAt' | 'resumeId' | 'updatedAt'>) => void;
   existingVersions: Version[];
 }
 

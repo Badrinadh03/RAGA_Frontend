@@ -212,7 +212,7 @@ export async function fullAnalysis(
     `Please run a complete ATS score analysis of my resume against this job description.\n\n` +
     (candidateName ? `Candidate: ${candidateName}\n` : '') +
     `Experience level: ${experienceLevel}\n\nJOB DESCRIPTION:\n${jd}`;
-  const reply = await callChat(message, [], { resume_text: resume, jd_text: jd, conversation_id: conversationId });
+  const { reply } = await callChat(message, [], { resume_text: resume, jd_text: jd, conversation_id: conversationId });
   const scoreMatch = reply.match(/(\d{1,3})\s*\/\s*100/);
   const ats_score = scoreMatch ? parseInt(scoreMatch[1], 10) : 0;
   return { markdown: reply, ats_score, verdict: undefined };
@@ -225,7 +225,7 @@ export async function getJdSummary(jobDescriptionText: string) {
     `- Role title, company, location, seniority level\n- 2-3 sentence summary\n` +
     `- Key responsibilities (up to 8)\n- Must-have skills\n- Nice-to-have skills\n` +
     `- ATS keywords\n- ATS checklist\n- 6 interview questions\n\nJOB DESCRIPTION:\n${jobDescriptionText}`;
-  const reply = await callChat(message, [], { jd_text: jobDescriptionText });
+  const { reply } = await callChat(message, [], { jd_text: jobDescriptionText });
 
   const extractList = (pattern: RegExp): string[] => {
     const m = reply.match(new RegExp(pattern.source + '[\\s\\S]*?(?=\\n#{1,3} |\\n\\*{2}[A-Z]|$)', 'i'));
@@ -259,7 +259,7 @@ export async function getResumeReview(resumeText: string, targetRole?: string) {
     `Review my resume and provide:\n1. 3-5 key strengths\n2. 3-5 gaps or weaknesses\n` +
     `3. Top 3 immediate fixes\n4. 2-3 bullet rewrites (Before: ... After: ...)\n\n` +
     (targetRole ? `Target role: ${targetRole}\n\n` : '') + `RESUME:\n${resumeText}`;
-  const reply = await callChat(message, [], { resume_text: resumeText });
+  const { reply } = await callChat(message, [], { resume_text: resumeText });
 
   const extractBullets = (pattern: RegExp): string[] => {
     const m = reply.match(new RegExp(pattern.source + '[\\s\\S]*?(?=\\n#{1,4} |\\n\\d\\.|\\n\\*{2}\\d|$)', 'i'));
@@ -284,7 +284,7 @@ export async function optimizeResume(resume: string, jd: string, _experienceLeve
   const message =
     `Optimize my resume section by section for this job description. ` +
     `For each section show the section name and optimized content.\n\nJOB DESCRIPTION:\n${jd}\n\nRESUME:\n${resume}`;
-  const reply = await callChat(message, [], { resume_text: resume, jd_text: jd });
+  const { reply } = await callChat(message, [], { resume_text: resume, jd_text: jd });
 
   const sections: Array<{ section_name: string; optimized_content: string }> = [];
   const matches = [...reply.matchAll(/#{1,3}\s*(?:【\s*)?([^】\n#*]+?)(?:\s*】)?\s*\n([\s\S]*?)(?=\n#{1,3}\s|$)/g)];

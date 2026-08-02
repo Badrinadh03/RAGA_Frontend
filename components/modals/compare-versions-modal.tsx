@@ -19,14 +19,9 @@ interface CompareVersionsModalProps {
   versions: [Version, Version];
 }
 
-const SECTION_LABELS = {
-  personalInfo: 'Personal Info',
-  summary: 'Summary',
-  skills: 'Skills',
-  experience: 'Experience',
-  projects: 'Projects',
-  education: 'Education',
-  certifications: 'Certifications',
+const FIELD_LABELS = {
+  targetRole: 'Target Role',
+  notes: 'Notes',
 };
 
 export default function CompareVersionsModal({
@@ -37,10 +32,8 @@ export default function CompareVersionsModal({
   const [v1, v2] = versions;
 
   // Find differences
-  const differences = Object.keys(v1.sections).filter(
-    (key) =>
-      v1.sections[key as keyof typeof v1.sections] !==
-      v2.sections[key as keyof typeof v2.sections]
+  const differences = (Object.keys(FIELD_LABELS) as Array<keyof typeof FIELD_LABELS>).filter(
+    (key) => v1[key] !== v2[key]
   );
 
   return (
@@ -74,63 +67,32 @@ export default function CompareVersionsModal({
               </div>
             </div>
 
-            {/* Summary */}
-            <div className="mb-8 p-4 rounded-lg bg-muted/50">
-              <h4 className="font-medium text-foreground mb-3">Overview</h4>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-muted-foreground">
-                    Sections included: {Object.values(v1.sections).filter(Boolean).length}/7
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">
-                    Sections included: {Object.values(v2.sections).filter(Boolean).length}/7
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Section Comparison */}
+            {/* Field Comparison */}
             <div>
-              <h4 className="font-medium text-foreground mb-4">Sections Comparison</h4>
+              <h4 className="font-medium text-foreground mb-4">Details Comparison</h4>
               <div className="space-y-3">
-                {(Object.keys(SECTION_LABELS) as Array<keyof typeof SECTION_LABELS>).map((section) => {
-                  const isIncludedV1 = v1.sections[section];
-                  const isIncludedV2 = v2.sections[section];
-                  const isDifferent = isIncludedV1 !== isIncludedV2;
+                {(Object.keys(FIELD_LABELS) as Array<keyof typeof FIELD_LABELS>).map((field) => {
+                  const isDifferent = v1[field] !== v2[field];
 
                   return (
                     <div
-                      key={section}
+                      key={field}
                       className={`p-3 rounded-lg border ${
                         isDifferent ? 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800' : 'bg-muted/30 border-border'
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-foreground">{SECTION_LABELS[section]}</span>
-                        <div className="flex gap-2">
-                          <Badge
-                            variant={isIncludedV1 ? 'default' : 'outline'}
-                            className="text-xs"
-                          >
-                            {isIncludedV1 ? 'Included' : 'Excluded'}
-                          </Badge>
-                          <Badge
-                            variant={isIncludedV2 ? 'default' : 'outline'}
-                            className="text-xs"
-                          >
-                            {isIncludedV2 ? 'Included' : 'Excluded'}
-                          </Badge>
-                        </div>
-                      </div>
-                      {isDifferent && (
-                        <div className="mt-2 inline-flex gap-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium text-foreground">{FIELD_LABELS[field]}</span>
+                        {isDifferent && (
                           <Badge variant="secondary" className="text-xs">
                             Changed
                           </Badge>
-                        </div>
-                      )}
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+                        <p>{v1[field] || '—'}</p>
+                        <p>{v2[field] || '—'}</p>
+                      </div>
                     </div>
                   );
                 })}
@@ -141,12 +103,12 @@ export default function CompareVersionsModal({
             {differences.length > 0 && (
               <div className="mt-8 p-4 rounded-lg bg-violet-50 dark:bg-violet-950/20 border border-violet-200 dark:border-violet-800">
                 <h4 className="font-medium text-foreground mb-2">
-                  {differences.length} section{differences.length !== 1 ? 's' : ''} differ{differences.length !== 1 ? '' : 's'}
+                  {differences.length} field{differences.length !== 1 ? 's' : ''} differ{differences.length !== 1 ? '' : 's'}
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {differences.map((section) => (
-                    <Badge key={section} variant="secondary" className="text-xs">
-                      {SECTION_LABELS[section as keyof typeof SECTION_LABELS]} changed
+                  {differences.map((field) => (
+                    <Badge key={field} variant="secondary" className="text-xs">
+                      {FIELD_LABELS[field]} changed
                     </Badge>
                   ))}
                 </div>

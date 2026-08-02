@@ -155,7 +155,7 @@ function PersonalHeader({ section, d, s, baseFs, narrow = false, contactSplit = 
   const iconSize = Math.max(baseFs * 0.9, 12);
 
   const renderIcon = (item: typeof contactItems[0]) => {
-    if (!d.headerContactStyle || d.headerContactStyle === 'none') return null;
+    if (!d.headerContactStyle) return null;
     const wrap = (el: React.ReactNode) => <span style={{ marginRight: 3, display: 'inline-flex', alignItems: 'center' }}>{el}</span>;
     if (item.icon === 'linkedin') return wrap(LINK_ICONS.linkedin(iconColor, iconSize));
     if (item.icon === 'github') return wrap(LINK_ICONS.github(iconColor, iconSize));
