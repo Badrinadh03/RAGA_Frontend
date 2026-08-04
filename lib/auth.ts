@@ -121,6 +121,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(getCachedUser);
   const [loading, setLoading] = useState(true);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Dedupes concurrent refresh calls (e.g. multiple tabs/mounts) so only one
+  // POST /auth/refresh is in flight at a time — the rotated token is single-use.
+  const refreshInFlightRef = useRef<Promise<string | null> | null>(null);
 
   const clearAuth = useCallback(() => {
     accessTokenRef.current = null;
@@ -140,21 +143,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshAccessToken = useCallback(async (): Promise<string | null> => {
-    const rt = getRefreshToken();
-    if (!rt) return null;
-    try {
-      const data = await apiPost('/auth/refresh', { refresh_token: rt });
-      accessTokenRef.current = data.access_token;
-      setRefreshToken(data.refresh_token);
-      const u: AuthUser = data.user;
-      setUser(u);
-      setCachedUser(u);
-      scheduleRefresh(data.expires_in || 3600);
-      return data.access_token;
-    } catch {
-      clearAuth();
-      return null;
-    }
+    if (refreshInFlightRef.current) return refreshInFlightRef.current;
+
+    const run = async (): Promise<string | null> => {
+      const rt = getRefreshToken();
+      if (!rt) return null;
+      try {
+        const data = await apiPost('/auth/refresh', { refresh_token: rt });
+        accessTokenRef.current = data.access_token;
+        setRefreshToken(data.refresh_token);
+        const u: AuthUser = data.user;
+        setUser(u);
+        setCachedUser(u);
+        scheduleRefresh(data.expires_in || 3600);
+        return data.access_token;
+      } catch {
+        clearAuth();
+        return null;
+      }
+    };
+
+    const p = run().finally(() => {
+      refreshInFlightRef.current = null;
+    });
+    refreshInFlightRef.current = p;
+    return p;
   }, [clearAuth, scheduleRefresh]);
 
   // On mount: try to restore session via refresh token
