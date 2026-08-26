@@ -36,7 +36,7 @@ function getStoredAtsMode(): 'HONEST' | 'KEYWORD' | 'AGGRESSIVE' {
 
 function getStoredApiKey(): string {
   if (typeof window === 'undefined') return '';
-  try { return localStorage.getItem('ats_openai_api_key') || ''; } catch { return ''; }
+  try { return localStorage.getItem('ats_anthropic_api_key') || ''; } catch { return ''; }
 }
 
 // ── Auth-aware fetch ──────────────────────────────────────────────────────
@@ -124,7 +124,7 @@ async function callChat(
     const err = await res.json().catch(() => ({}));
     const detail = (err as { detail?: string }).detail || '';
     if (detail.toLowerCase().includes('api key') || res.status === 401) {
-      throw new Error('No OpenAI API key found. Go to AI Mode → ⚙️ Settings and enter your key.');
+      throw new Error('No Anthropic API key found. Go to AI Mode → ⚙️ Settings and enter your key.');
     }
     throw new Error(detail || `Backend error ${res.status}`);
   }
