@@ -23,22 +23,92 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import type { ResumeVersion } from '@/lib/store';
+import type { ResumeVersion, DesignSettings, ResumeSettings } from '@/lib/store';
+
+// ── Template definition shape ─────────────────────────────────────────────────
+// `design` and `layout` are partial overrides applied on top of sane defaults —
+// both for rendering the preview AND for actually applying the template to a
+// real resume (see handleApplyTemplate below), so preview and applied result
+// always match.
+interface TemplateDef {
+  id: string;
+  name: string;
+  description: string;
+  tags: string[];
+  atsScore: number;
+  pros: string[];
+  cons: string[];
+  bestFor: string;
+  design: Partial<DesignSettings>;
+  layout: Partial<Omit<ResumeSettings, 'design'>>;
+}
 
 // ── Sample data used to render template previews ─────────────────────────────
-function buildSampleVersion(templateId: string, accentColor: string, headingStyle: string, fontFamily: string): ResumeVersion {
+function buildSampleVersion(template: TemplateDef): ResumeVersion {
   const now = new Date().toISOString();
+  const design: DesignSettings = {
+    colorMode: 'basic',
+    accentColor: '#374151',
+    accentApplyName: true,
+    accentApplyJobTitle: false,
+    accentApplyHeadings: true,
+    accentApplyHeadingsLine: true,
+    accentApplyHeaderIcons: true,
+    accentApplyDots: false,
+    accentApplyDates: false,
+    accentApplyLinkIcons: false,
+    fontCategory: 'sans',
+    fontFamily: 'Inter',
+    sectionHeadingStyle: 'underline',
+    sectionHeadingCaps: 'uppercase',
+    sectionHeadingSize: 'm',
+    sectionHeadingIcons: 'none',
+    linkUnderline: false,
+    linkBlueColor: false,
+    linkIcon: false,
+    linkIconStyle: 'chain',
+    headerAlignment: 'left',
+    headerArrangement: 'stacked',
+    headerContactStyle: 'icon',
+    headerIconStyle: 1,
+    headerSeparator: true,
+    headerSeparatorStyle: 'bar',
+    nameSize: 'l',
+    nameBold: true,
+    nameFont: 'body',
+    titleSize: 'm',
+    titlePlacement: 'below',
+    titleStyle: 'normal',
+    showPhoto: false,
+    photoUrl: '',
+    photoShape: 'circle',
+    photoSize: 'md',
+    skillsLayout: 'compact',
+    skillsColumns: 2,
+    skillsSubinfo: 'dash',
+    skillsLevelStyle: 'dots',
+    skillsCompactStyle: 'bullet',
+    showProfileHeading: true,
+    educationOrder: 'degree-school',
+    experienceOrder: 'title-company',
+    groupPromotions: false,
+    showFooter: false,
+    footerPageNumbers: false,
+    footerEmail: false,
+    footerName: false,
+    ...template.design,
+  };
   return {
-    id: `sample-${templateId}`,
-    name: templateId,
-    resumeId: `sample-resume-${templateId}`,
+    id: `sample-${template.id}`,
+    name: template.id,
+    resumeId: `sample-resume-${template.id}`,
     createdAt: now,
     updatedAt: now,
     settings: {
       fontSize: 9,
       lineHeight: 1.15,
       paperSize: 'A4',
-      template: templateId,
+      template: template.id,
       atsSafeMode: false,
       layoutColumns: 'one',
       headerPosition: 'top',
@@ -52,57 +122,8 @@ function buildSampleVersion(templateId: string, accentColor: string, headingStyl
       subtitlePlacement: 'next-line',
       indentBody: true,
       listStyle: 'bullet',
-      design: {
-        colorMode: 'basic',
-        accentColor,
-        accentApplyName: true,
-        accentApplyJobTitle: false,
-        accentApplyHeadings: true,
-        accentApplyHeadingsLine: true,
-        accentApplyHeaderIcons: true,
-        accentApplyDots: false,
-        accentApplyDates: false,
-        accentApplyLinkIcons: false,
-        fontCategory: 'sans',
-        fontFamily,
-        sectionHeadingStyle: headingStyle as any,
-        sectionHeadingCaps: 'uppercase',
-        sectionHeadingSize: 'm',
-        sectionHeadingIcons: 'none',
-        linkUnderline: false,
-        linkBlueColor: false,
-        linkIcon: false,
-        linkIconStyle: 'chain',
-        headerAlignment: 'left',
-        headerArrangement: 'stacked',
-        headerContactStyle: 'icon',
-        headerIconStyle: 1,
-        headerSeparator: true,
-        headerSeparatorStyle: 'bar',
-        nameSize: 'l',
-        nameBold: true,
-        nameFont: 'body',
-        titleSize: 'm',
-        titlePlacement: 'below',
-        titleStyle: 'normal',
-        showPhoto: false,
-        photoUrl: '',
-        photoShape: 'circle',
-        photoSize: 'md',
-        skillsLayout: 'compact',
-        skillsColumns: 2,
-        skillsSubinfo: 'dash',
-        skillsLevelStyle: 'dots',
-        skillsCompactStyle: 'bullet',
-        showProfileHeading: true,
-        educationOrder: 'degree-school',
-        experienceOrder: 'title-company',
-        groupPromotions: false,
-        showFooter: false,
-        footerPageNumbers: false,
-        footerEmail: false,
-        footerName: false,
-      },
+      ...template.layout,
+      design,
     },
     sections: [
       {
@@ -225,19 +246,22 @@ function buildSampleVersion(templateId: string, accentColor: string, headingStyl
 }
 
 // ── Template definitions ──────────────────────────────────────────────────────
-const TEMPLATES = [
+// The first 4 are the original set. The rest were added taking reference from
+// FlowCV's template categories (flowcv.com/resume-templates) — Popular/Simple
+// (Classic Serif), Two-Column/Sidebar (Sidebar Modern), Compact, and First Job —
+// translated into settings this app's design engine actually supports.
+const TEMPLATES: TemplateDef[] = [
   {
     id: 'ATS Clean',
     name: 'ATS Clean',
     description: 'Maximum ATS compatibility. Single column, zero formatting risk.',
     tags: ['ATS', 'Minimal', 'Corporate'],
     atsScore: 99,
-    accentColor: '#1d4ed8',
-    headingStyle: 'underline',
-    fontFamily: 'Inter',
     pros: ['99% ATS pass rate', 'Single column', 'Perfect for corporate & IT'],
     cons: ['Less visual appeal'],
     bestFor: 'TCS, Infosys, Wipro, Banking',
+    design: { accentColor: '#1d4ed8', sectionHeadingStyle: 'underline', fontFamily: 'Inter', fontCategory: 'sans' },
+    layout: { layoutColumns: 'one', headerPosition: 'top' },
   },
   {
     id: 'Minimal Modern',
@@ -245,12 +269,11 @@ const TEMPLATES = [
     description: 'Clean and contemporary with subtle accent colors.',
     tags: ['Modern', 'Balanced', 'Tech'],
     atsScore: 95,
-    accentColor: '#7c3aed',
-    headingStyle: 'line-left',
-    fontFamily: 'DM Sans',
     pros: ['95% ATS pass rate', 'Strong visual hierarchy', 'Great for product & tech'],
     cons: ['Some older ATS may skip colors'],
     bestFor: 'Startups, Product companies, FAANG',
+    design: { accentColor: '#7c3aed', sectionHeadingStyle: 'line-left', fontFamily: 'DM Sans', fontCategory: 'sans' },
+    layout: { layoutColumns: 'one', headerPosition: 'top' },
   },
   {
     id: 'Executive',
@@ -258,12 +281,11 @@ const TEMPLATES = [
     description: 'Professional and authoritative. Ideal for senior roles.',
     tags: ['Senior', 'Professional', 'Leadership'],
     atsScore: 97,
-    accentColor: '#1e3a5f',
-    headingStyle: 'filled',
-    fontFamily: 'Lato',
     pros: ['97% ATS pass rate', 'Authority feel', 'Great for senior/lead roles'],
     cons: ['May feel heavy for freshers'],
     bestFor: 'Senior Engineers, Tech Leads, Managers',
+    design: { accentColor: '#1e3a5f', sectionHeadingStyle: 'filled', fontFamily: 'Lato', fontCategory: 'sans' },
+    layout: { layoutColumns: 'one', headerPosition: 'top' },
   },
   {
     id: 'Creative Tech',
@@ -271,12 +293,59 @@ const TEMPLATES = [
     description: 'Bold accent with clean structure. Stands out in tech.',
     tags: ['Creative', 'Bold', 'Modern'],
     atsScore: 88,
-    accentColor: '#059669',
-    headingStyle: 'box',
-    fontFamily: 'Nunito',
     pros: ['Visually memorable', 'Great for design/frontend', 'Strong first impression'],
     cons: ['Lower ATS score with some parsers'],
     bestFor: 'Frontend, UI/UX, Creative roles',
+    design: { accentColor: '#059669', sectionHeadingStyle: 'box', fontFamily: 'Nunito', fontCategory: 'sans' },
+    layout: { layoutColumns: 'one', headerPosition: 'top' },
+  },
+  {
+    id: 'Sidebar Modern',
+    name: 'Sidebar Modern',
+    description: 'Two-column layout with contact & skills in a left sidebar. Organized and distinctive.',
+    tags: ['Sidebar', 'Two-Column', 'Modern'],
+    atsScore: 82,
+    pros: ['Strong visual organization', 'Fits more content on one page', 'Great for product & design roles'],
+    cons: ['Two-column layouts can trip up older ATS parsers'],
+    bestFor: 'Product companies, Design-forward teams, Portfolio-style resumes',
+    design: { accentColor: '#0f766e', sectionHeadingStyle: 'line-left', fontFamily: 'DM Sans', fontCategory: 'sans', headerArrangement: 'split' },
+    layout: { layoutColumns: 'two', headerPosition: 'left', columnWidthLeft: 34 },
+  },
+  {
+    id: 'Classic Serif',
+    name: 'Classic Serif',
+    description: 'Traditional black-and-white serif. Timeless and formal.',
+    tags: ['Classic', 'Serif', 'Traditional'],
+    atsScore: 98,
+    pros: ['98% ATS pass rate', 'Timeless, formal look', 'Great for academia, law, government'],
+    cons: ['Less visually distinctive'],
+    bestFor: 'Academia, Legal, Government, Consulting',
+    design: { accentColor: '#111827', sectionHeadingStyle: 'plain', fontFamily: 'Lora', fontCategory: 'serif' },
+    layout: { layoutColumns: 'one', headerPosition: 'top' },
+  },
+  {
+    id: 'Compact Pro',
+    name: 'Compact Pro',
+    description: 'Tighter spacing and smaller margins. Fits a long career onto one page.',
+    tags: ['Compact', 'Dense', 'Experienced'],
+    atsScore: 96,
+    pros: ['Fits 10+ years on one page', 'Still fully ATS-readable', 'No wasted whitespace'],
+    cons: ['Feels tight for shorter resumes'],
+    bestFor: 'Senior professionals, 10+ years of experience',
+    design: { accentColor: '#334155', sectionHeadingStyle: 'overline', fontFamily: 'Inter', fontCategory: 'sans' },
+    layout: { layoutColumns: 'one', headerPosition: 'top', marginTopBottom: 8, marginLeftRight: 10, spaceBetweenEntries: 1, fontSize: 8.5 },
+  },
+  {
+    id: 'Fresh Start',
+    name: 'Fresh Start',
+    description: 'Friendly and approachable. Built for students and first-time job seekers.',
+    tags: ['First Job', 'Simple', 'Friendly'],
+    atsScore: 97,
+    pros: ['97% ATS pass rate', 'Approachable, not intimidating', 'Great for students & freshers'],
+    cons: ['Less suited to senior/executive roles'],
+    bestFor: 'Students, Interns, First-time job seekers',
+    design: { accentColor: '#2563eb', sectionHeadingStyle: 'double-underline', fontFamily: 'Source Sans Pro', fontCategory: 'sans' },
+    layout: { layoutColumns: 'one', headerPosition: 'top' },
   },
 ];
 
@@ -293,7 +362,11 @@ export default function TemplatesPage() {
 
   const handleApplyTemplate = () => {
     if (selectedVersion && applyTarget) {
-      store.updateSettings(selectedVersion.id, { template: applyTarget.id as any });
+      // Apply BOTH the layout settings and the design settings the template
+      // defines — previously this only stamped the template's name onto the
+      // resume without actually changing how it renders.
+      store.updateSettings(selectedVersion.id, { template: applyTarget.id, ...applyTarget.layout });
+      store.updateDesignSettings(selectedVersion.id, applyTarget.design);
       toastSettingsUpdated();
       setShowApplyModal(false);
       setApplyTarget(null);
@@ -330,7 +403,7 @@ export default function TemplatesPage() {
           {/* Template Grid — 2 columns, card = thumbnail left + info right */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             {TEMPLATES.map(template => {
-              const sampleVersion = buildSampleVersion(template.id, template.accentColor, template.headingStyle, template.fontFamily);
+              const sampleVersion = buildSampleVersion(template);
               return (
                 <div
                   key={template.id}
@@ -467,7 +540,7 @@ export default function TemplatesPage() {
                 justifyContent: 'center',
                 marginBottom: '-12%',
               }}>
-                <ResumePreview version={buildSampleVersion(previewTemplate.id, previewTemplate.accentColor, previewTemplate.headingStyle, previewTemplate.fontFamily)} />
+                <ResumePreview version={buildSampleVersion(previewTemplate)} />
               </div>
             )}
           </div>
