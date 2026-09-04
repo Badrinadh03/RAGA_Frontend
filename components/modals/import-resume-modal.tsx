@@ -96,13 +96,14 @@ function parseResumeText(text: string): ParsedResumeData {
 
   // ── Section detection
   const sectionMap: Record<string, number> = {};
+  // Trailing `:?` tolerates the very common "Experience:" / "Skills:" heading style.
   const SECTION_PATTERNS: Record<string, RegExp> = {
-    summary: /^(summary|objective|profile|about me|professional summary|career objective)\s*$/i,
-    experience: /^(experience|work experience|professional experience|employment history|work history)\s*$/i,
-    education: /^(education|academic background|qualifications|academic qualifications)\s*$/i,
-    skills: /^(skills|technical skills|core competencies|competencies|key skills)\s*$/i,
-    projects: /^(projects|key projects|personal projects|project experience|portfolio)\s*$/i,
-    certifications: /^(certifications?|certificates?|licenses?|credentials?)\s*$/i,
+    summary: /^(summary|objective|profile|about me|professional summary|career objective):?\s*$/i,
+    experience: /^(experience|work experience|professional experience|employment history|work history):?\s*$/i,
+    education: /^(education|academic background|qualifications|academic qualifications):?\s*$/i,
+    skills: /^(skills|technical skills|core competencies|competencies|key skills):?\s*$/i,
+    projects: /^(projects|key projects|personal projects|project experience|portfolio):?\s*$/i,
+    certifications: /^(certifications?|certificates?|licenses?|credentials?):?\s*$/i,
   };
 
   lines.forEach((line, i) => {
@@ -243,20 +244,23 @@ function parseResumeText(text: string): ParsedResumeData {
 function buildSectionsFromParsed(parsed: ParsedResumeData): Omit<ResumeSection, 'id' | 'order'>[] {
   const sections: Omit<ResumeSection, 'id' | 'order'>[] = [];
 
-  // Personal info
+  // Personal info — field names must match what PersonalHeader (resume-preview.tsx)
+  // and the editor's content-tab form actually read: fullName/headline/city/country/portfolio.
+  const [city = '', country = ''] = (parsed.location || '').split(',').map((s) => s.trim());
   sections.push({
     type: 'personal-info' as SectionType,
     title: 'Personal Information',
     visible: true,
     content: {
-      name: parsed.name,
+      fullName: parsed.name,
       email: parsed.email,
       phone: parsed.phone,
       linkedin: parsed.linkedin,
       github: parsed.github,
-      location: parsed.location,
-      jobTitle: parsed.jobTitle,
-      website: '',
+      city,
+      country,
+      headline: parsed.jobTitle,
+      portfolio: '',
     },
   });
 
@@ -266,7 +270,7 @@ function buildSectionsFromParsed(parsed: ParsedResumeData): Omit<ResumeSection, 
       type: 'summary' as SectionType,
       title: 'Summary',
       visible: true,
-      content: { value: parsed.summary },
+      content: { text: parsed.summary },
     });
   }
 
@@ -277,7 +281,7 @@ function buildSectionsFromParsed(parsed: ParsedResumeData): Omit<ResumeSection, 
       title: 'Experience',
       visible: true,
       content: {
-        items: parsed.experience.map((exp, i) => ({
+        roles: parsed.experience.map((exp, i) => ({
           id: `exp-${i}`,
           company: exp.company,
           title: exp.title,
@@ -299,7 +303,7 @@ function buildSectionsFromParsed(parsed: ParsedResumeData): Omit<ResumeSection, 
       title: 'Education',
       visible: true,
       content: {
-        items: parsed.education.map((edu, i) => ({
+        schools: parsed.education.map((edu, i) => ({
           id: `edu-${i}`,
           school: edu.school,
           degree: edu.degree,
@@ -338,7 +342,7 @@ function buildSectionsFromParsed(parsed: ParsedResumeData): Omit<ResumeSection, 
       title: 'Projects',
       visible: true,
       content: {
-        items: parsed.projects.map((p, i) => ({
+        projects: parsed.projects.map((p, i) => ({
           id: `proj-${i}`,
           name: p.name,
           role: '',
