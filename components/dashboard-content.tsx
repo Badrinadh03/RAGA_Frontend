@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Plus, ChevronDown, Sparkles } from 'lucide-react';
+import { Search, Plus, ChevronDown, Sparkles, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ResumeCard from '@/components/resume-card';
 import EmptyState from '@/components/empty-state';
@@ -11,6 +11,7 @@ import { useStore } from '@/lib/store';
 
 interface DashboardContentProps {
   onCreateClick: () => void;
+  onImportClick: () => void;
   showEmpty: boolean;
 }
 
@@ -26,7 +27,7 @@ function formatLastUpdated(updatedAt: string): string {
   return `Updated ${Math.floor(diffDays / 30)} month${diffDays >= 60 ? 's' : ''} ago`;
 }
 
-export default function DashboardContent({ onCreateClick, showEmpty }: DashboardContentProps) {
+export default function DashboardContent({ onCreateClick, onImportClick, showEmpty }: DashboardContentProps) {
   const store = useStore();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -99,7 +100,7 @@ export default function DashboardContent({ onCreateClick, showEmpty }: Dashboard
   return (
     <main className="flex-1 px-4 md:px-8 py-6 md:py-8">
       {showEmpty ? (
-        <EmptyState onCreateClick={onCreateClick} />
+        <EmptyState onCreateClick={onCreateClick} onImportClick={onImportClick} />
       ) : (
         <>
           {/* Export History Bar */}
@@ -141,6 +142,15 @@ export default function DashboardContent({ onCreateClick, showEmpty }: Dashboard
                 <Sparkles className="w-4 h-4" />
                 <span className="hidden sm:inline">AI-Resume</span>
                 <span className="sm:hidden">AI</span>
+              </Button>
+              <Button
+                onClick={onImportClick}
+                variant="outline"
+                className="h-10 gap-2 whitespace-nowrap"
+              >
+                <Upload className="w-4 h-4" />
+                <span className="hidden sm:inline">Upload Existing Resume</span>
+                <span className="sm:hidden">Upload</span>
               </Button>
             </div>
 

@@ -1,13 +1,14 @@
 'use client';
 
-import { FileText, Plus } from 'lucide-react';
+import { FileText, Plus, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface EmptyStateProps {
   onCreateClick: () => void;
+  onImportClick?: () => void;
 }
 
-export default function EmptyState({ onCreateClick }: EmptyStateProps) {
+export default function EmptyState({ onCreateClick, onImportClick }: EmptyStateProps) {
   return (
     <main className="flex-1 flex items-center justify-center px-4 md:px-8 py-6 md:py-8">
       <div className="text-center max-w-md">
@@ -25,13 +26,25 @@ export default function EmptyState({ onCreateClick }: EmptyStateProps) {
           Start building an ATS-friendly resume that gets noticed by recruiters and hiring systems.
         </p>
         
-        <Button
-          onClick={onCreateClick}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 w-full sm:w-auto"
-        >
-          <Plus className="w-5 h-5" />
-          Create New Resume
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Button
+            onClick={onCreateClick}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 w-full sm:w-auto"
+          >
+            <Plus className="w-5 h-5" />
+            Create New Resume
+          </Button>
+          {onImportClick && (
+            <Button
+              onClick={onImportClick}
+              variant="outline"
+              className="gap-2 w-full sm:w-auto"
+            >
+              <Upload className="w-5 h-5" />
+              Upload Existing Resume
+            </Button>
+          )}
+        </div>
       </div>
     </main>
   );

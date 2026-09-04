@@ -347,6 +347,45 @@ const TEMPLATES: TemplateDef[] = [
     design: { accentColor: '#2563eb', sectionHeadingStyle: 'double-underline', fontFamily: 'Source Sans Pro', fontCategory: 'sans' },
     layout: { layoutColumns: 'one', headerPosition: 'top' },
   },
+  // ── Additional ATS-safe templates — single column, standard fonts, no
+  // layout risk. Same safe structure as ATS Clean, different color/font so
+  // there's real choice within the "maximum ATS compatibility" category.
+  {
+    id: 'ATS Slate',
+    name: 'ATS Slate',
+    description: 'Neutral gray-on-white. As safe as it gets for automated screening.',
+    tags: ['ATS', 'Neutral', 'Corporate'],
+    atsScore: 99,
+    pros: ['99% ATS pass rate', 'Single column, no graphics', 'Understated, works everywhere'],
+    cons: ['Very plain — low visual differentiation'],
+    bestFor: 'Government, Finance, large enterprises',
+    design: { accentColor: '#475569', sectionHeadingStyle: 'plain', fontFamily: 'Roboto', fontCategory: 'sans' },
+    layout: { layoutColumns: 'one', headerPosition: 'top' },
+  },
+  {
+    id: 'ATS Navy',
+    name: 'ATS Navy',
+    description: 'Classic navy accent on a single-column, ATS-safe structure.',
+    tags: ['ATS', 'Professional', 'Safe'],
+    atsScore: 99,
+    pros: ['99% ATS pass rate', 'Single column, no graphics', 'Reads as serious and professional'],
+    cons: ['Less visual appeal'],
+    bestFor: 'Banking, Insurance, MNCs',
+    design: { accentColor: '#1e40af', sectionHeadingStyle: 'underline', fontFamily: 'Arial', fontCategory: 'sans' },
+    layout: { layoutColumns: 'one', headerPosition: 'top' },
+  },
+  {
+    id: 'ATS Forest',
+    name: 'ATS Forest',
+    description: 'Muted green accent, understated and reliable. Fully ATS-safe.',
+    tags: ['ATS', 'Understated', 'Reliable'],
+    atsScore: 98,
+    pros: ['98% ATS pass rate', 'Single column, no graphics', 'Calm, non-corporate feel without sacrificing safety'],
+    cons: ['Less visual appeal'],
+    bestFor: 'Healthcare, Non-profits, Public sector',
+    design: { accentColor: '#166534', sectionHeadingStyle: 'overline', fontFamily: 'Verdana', fontCategory: 'sans' },
+    layout: { layoutColumns: 'one', headerPosition: 'top' },
+  },
 ];
 
 export default function TemplatesPage() {

@@ -6,6 +6,7 @@ import Sidebar from '@/components/sidebar';
 import DashboardContent from '@/components/dashboard-content';
 import { AIInsightsPanel } from '@/components/ai-insights-panel';
 import { CreateResumeModal } from '@/components/modals/create-resume-modal';
+import { ImportResumeModal } from '@/components/modals/import-resume-modal';
 import { useStore } from '@/lib/store';
 import { useAuth } from '@/lib/auth';
 
@@ -14,6 +15,7 @@ export default function Home() {
   const store = useStore();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -62,6 +64,7 @@ export default function Home() {
           <div className="flex-1">
             <DashboardContent
               onCreateClick={() => setCreateModalOpen(true)}
+              onImportClick={() => setImportModalOpen(true)}
               showEmpty={store.resumes.length === 0}
             />
           </div>
@@ -77,6 +80,11 @@ export default function Home() {
         open={createModalOpen}
         onOpenChange={setCreateModalOpen}
         onCreateResume={handleCreateResume}
+      />
+
+      <ImportResumeModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
       />
     </div>
   );
